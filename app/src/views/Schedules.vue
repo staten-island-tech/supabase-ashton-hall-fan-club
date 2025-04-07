@@ -1,11 +1,10 @@
 <template>
     <div>
 <div class="container">
-    <form>
-        <div>
-            <input type="text"
-        </div>
+    <form input type="text">
+
     </form>
+        
 </div>
     </div>
 </template>
