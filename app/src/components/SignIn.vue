@@ -16,6 +16,19 @@
   </div>
 </template>
 
-<script></script>
+<script setup>
+import { reactive } from 'vue'
+
+const username = reactive('')
+const password = reactive('')
+
+function submit(event) {
+  event.preventDefault()
+  console.log('Username:', username.value)
+  console.log('Password:', password.value)
+  username.value = ''
+  password.value = ''
+}
+</script>
 
 <style lang="scss" scoped></style>
