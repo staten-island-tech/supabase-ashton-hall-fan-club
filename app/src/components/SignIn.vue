@@ -3,11 +3,11 @@
     <form @submit="submit">
       <div class="login">
         <h1>Username</h1>
-        <input type="text" :value="username" required />
+        <input type="text" v-model="username" required />
       </div>
       <div class="password">
         <h1>Password</h1>
-        <input type="password" :value="password" required />
+        <input type="password" v-model="password" required />
       </div>
       <div class="submitButton">
         <button type="submit">Login</button>
@@ -17,10 +17,10 @@
 </template>
 
 <script setup>
-import { reactive } from 'vue'
+import { ref } from 'vue'
 
-const username = reactive('')
-const password = reactive('')
+const username = ref('')
+const password = ref('')
 
 function submit(event) {
   event.preventDefault()
@@ -30,5 +30,3 @@ function submit(event) {
   password.value = ''
 }
 </script>
-
-<style lang="scss" scoped></style>
