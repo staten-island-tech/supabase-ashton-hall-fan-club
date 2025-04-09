@@ -1,32 +1,32 @@
 <template>
-  <div>
-    <form @submit="submit">
-      <div class="login">
-        <h1>Username</h1>
-        <input type="text" v-model="username" required />
-      </div>
-      <div class="password">
-        <h1>Password</h1>
-        <input type="password" v-model="password" required />
-      </div>
-      <div class="submitButton">
-        <button type="submit">Login</button>
-      </div>
-    </form>
-  </div>
+  <form @submit.prevent="handleLogin">
+    <div>
+      <label>Username:</label>
+      <input v-model="username" type="text" required />
+    </div>
+    <div>
+      <label>Password:</label>
+      <input v-model="password" type="password" required />
+    </div>
+    <button type="submit">Login</button>
+  </form>
 </template>
 
 <script setup>
 import { ref } from 'vue'
+import { useAuthStore } from '@/stores/auth'
 
 const username = ref('')
 const password = ref('')
 
-function submit(event) {
-  event.preventDefault()
-  console.log('Username:', username.value)
-  console.log('Password:', password.value)
-  username.value = ''
-  password.value = ''
+const auth = useAuthStore()
+
+function handleLogin() {
+  if (username.value === 'admin' && password.value === 'password') {
+    auth.login()
+    alert('Login successful!')
+  } else {
+    alert('Invalid credentials!')
+  }
 }
 </script>

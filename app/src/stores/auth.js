@@ -11,4 +11,6 @@ export const useAuthStore = defineStore('auth', () => {
   function logout() {
     isLoggedin.value = false
   }
+
+  return { isLoggedin, login, logout }
 })
