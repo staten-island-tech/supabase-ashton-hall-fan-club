@@ -80,7 +80,6 @@ export default {
       this.isFormVisible = true
     },
     cancelForm() {
-      // Hide the form and reset the new schedule data
       this.isFormVisible = false
       this.newSchedule = {
         title: '',
@@ -90,13 +89,11 @@ export default {
       }
     },
     async submitForm() {
-      // Submit the form and insert the new schedule into the table
       const { data, error } = await supabase.from('schedules').insert([this.newSchedule])
 
       if (error) {
         console.error('Error saving schedule:', error)
       } else {
-        // Add the new schedule to the local list and reset the form
         this.schedules.push(data[0])
         this.cancelForm()
       }
