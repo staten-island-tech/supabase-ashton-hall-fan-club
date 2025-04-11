@@ -5,7 +5,7 @@
 </template>
 
 <script>
-import Schedule from './components/Schedules.vue'
+import Schedule from '../components/Schedules.vue'
 
 export default {
   name: 'App',
