@@ -44,5 +44,6 @@ function handleLogout() {
 
 function successfulLogin() {
   router.push('/about')
+  console.log('logged in')
 }
 </script>

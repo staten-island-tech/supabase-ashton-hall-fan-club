@@ -1,12 +1,23 @@
 <template>
   <div class="about">
     <h1>This is an about page</h1>
-    <button>Logout</button>
+    <button @click="handleLogout">Logout</button>
   </div>
 </template>
 
 <script setup>
+import { useAuthStore } from '@/stores/auth'
+import { useRouter } from 'vue-router'
 
+const router = useRouter()
+const auth = useAuthStore()
+
+function handleLogout() {
+  auth.logout()
+  alert('Logout sucessful')
+  router.push('/')
+  console.log('logged out')
+}
 </script>
 
 <style>
