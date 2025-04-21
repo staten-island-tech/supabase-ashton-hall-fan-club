@@ -98,6 +98,7 @@
 </template>
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
 <script>
 import supabase from 'supabase.js'
@@ -154,6 +155,8 @@ export default {
   },
 }
 </script>
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
