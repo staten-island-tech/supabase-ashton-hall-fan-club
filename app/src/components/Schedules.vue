@@ -96,12 +96,9 @@
     </button>
   </div>
 </template>
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
 
 <script>
-import supabase from 'supabase.js'
+import supabase from './supabase.js'
 
 export default {
   data() {
@@ -121,7 +118,6 @@ export default {
   },
   methods: {
     async loadSchedules() {
-      // Fetch all schedules from the Supabase table
       const { data, error } = await supabase.from('schedules').select()
       if (error) {
         console.error('Error loading schedules:', error)
@@ -130,7 +126,6 @@ export default {
       }
     },
     showForm() {
-      // Display the form to add a new schedule
       this.isFormVisible = true
     },
     cancelForm() {
@@ -144,7 +139,6 @@ export default {
     },
     async submitForm() {
       const { data, error } = await supabase.from('schedules').insert([this.newSchedule])
-
       if (error) {
         console.error('Error saving schedule:', error)
       } else {
@@ -155,9 +149,7 @@ export default {
   },
 }
 </script>
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
+
+<style scoped>
+/* You can add custom styles here if needed */
+</style>
