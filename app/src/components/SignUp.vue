@@ -16,7 +16,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import { supabase } from '../'
+import supabase from '../supabase'
 const email = ref('')
 const password = ref('')
 
