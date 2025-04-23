@@ -78,6 +78,8 @@ export default {
   async mounted() {
     await this.loadSchedules()
     this.subscribeToChanges()
+    const el = this.$el.querySelector('h1') // or any visible element
+    gsap.fromTo(el, { opacity: 0, y: -50 }, { opacity: 1, y: 0, duration: 1 })
   },
   beforeUnmount() {
     if (this.subscription) {
@@ -183,7 +185,7 @@ export default {
   padding: 20px;
   max-width: 800px;
   margin: auto;
-  color: #eee;
+  color: var(--color-text);
 }
 
 .schedule-table {
@@ -221,7 +223,7 @@ export default {
   padding: 6px;
   background: #333;
   border: 1px solid #555;
-  color: #fff;
+  color: var(--color-text);
   border-radius: 4px;
 }
 
@@ -233,9 +235,9 @@ export default {
 
 button {
   padding: 8px 12px;
-  background-color: #444;
+  background-color: var(--color-button-bg);
   border: none;
-  color: #fff;
+  color: var(--color-button-text);
   cursor: pointer;
   border-radius: 4px;
 }

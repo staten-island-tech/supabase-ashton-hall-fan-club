@@ -34,10 +34,16 @@
   --color-text: var(--vt-c-text-light-1);
 
   --section-gap: 160px;
+
+  --color-button-bg: var(--vt-c-black);
+  --color-button-text: var(--vt-c-white);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
+    --color-button-bg: var(--vt-c-white);
+    --color-button-text: var(--vt-c-black);
+
     --color-background: var(--vt-c-black);
     --color-background-soft: var(--vt-c-black-soft);
     --color-background-mute: var(--vt-c-black-mute);
