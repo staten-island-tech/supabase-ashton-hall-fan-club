@@ -8,8 +8,8 @@ import { useAuthStore } from './stores/auth'
     <header>
       <div class="wrapper">
         <nav>
-          <RouterLink to="/">Sign Up</RouterLink>
-          <RouterLink to="/about">Sign In</RouterLink>
+          <RouterLink to="/">Sign In</RouterLink>
+          <RouterLink to="/about">Sign Up</RouterLink>
         </nav>
       </div>
     </header>

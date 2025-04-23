@@ -1,13 +1,13 @@
 <template>
   <div class="about">
-    <h1>This is an about page</h1>
-    <button @click="handleLogout">Logout</button>
+    <SignIn />
   </div>
 </template>
 
 <script setup>
 import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
+import SignIn from '@/components/SignIn.vue'
 
 const router = useRouter()
 const auth = useAuthStore()
