@@ -53,7 +53,15 @@
       </form>
     </div>
 
-    <button v-if="!isFormVisible" @click="showForm">Add New Schedule</button>
+    <button
+      v-if="!isFormVisible"
+      ref="addBtn"
+      @click="showForm"
+      @mouseenter="hoverBtn"
+      @mouseleave="leaveBtn"
+    >
+      Add New Schedule
+    </button>
   </div>
 </template>
 
@@ -78,8 +86,22 @@ export default {
   async mounted() {
     await this.loadSchedules()
     this.subscribeToChanges()
-    const el = this.$el.querySelector('h1') // or any visible element
-    gsap.fromTo(el, { opacity: 0, y: -50 }, { opacity: 1, y: 0, duration: 1 })
+
+    // Animate header
+    const title = this.$el.querySelector('h1')
+    gsap.fromTo(title, { opacity: 0, y: -50 }, { opacity: 1, y: 0, duration: 1 })
+
+    // Animate all table rows on mount
+    this.$nextTick(() => {
+      const rows = this.$el.querySelectorAll('tbody tr')
+      gsap.from(rows, {
+        opacity: 0,
+        y: 20,
+        stagger: 0.1,
+        duration: 0.6,
+        ease: 'power2.out',
+      })
+    })
   },
   beforeUnmount() {
     if (this.subscription) {
@@ -92,7 +114,11 @@ export default {
         const rows = this.$el.querySelectorAll('tbody tr')
         const lastRow = rows[rows.length - 1]
         if (lastRow) {
-          gsap.fromTo(lastRow, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5 })
+          gsap.fromTo(
+            lastRow,
+            { opacity: 0, y: 40, scale: 0.95 },
+            { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: 'back.out(1.7)' },
+          )
         }
       })
     },
@@ -108,6 +134,14 @@ export default {
     },
     showForm() {
       this.isFormVisible = true
+      this.$nextTick(() => {
+        const form = this.$el.querySelector('.form-wrapper')
+        gsap.fromTo(
+          form,
+          { opacity: 0, y: -30 },
+          { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out' },
+        )
+      })
     },
     cancelForm() {
       this.isFormVisible = false
@@ -120,7 +154,6 @@ export default {
     },
     async submitForm() {
       if (this.isEditing) {
-        // If editing, update the existing schedule
         const { error } = await supabase
           .from('schedules')
           .update(this.newSchedule)
@@ -132,17 +165,14 @@ export default {
           this.cancelForm()
         }
       } else {
-        // If adding new schedule
         const { error } = await supabase.from('schedules').insert([this.newSchedule])
         if (error) {
           console.error('Error saving schedule:', error)
         } else {
-          // No need to push to `schedules`, real-time handles it
           this.cancelForm()
-
-          // Optional: animate form close
-          if (this.$el.querySelector('.form-wrapper')) {
-            gsap.to('.form-wrapper', { opacity: 0, y: -20, duration: 0.3 })
+          const form = this.$el.querySelector('.form-wrapper')
+          if (form) {
+            gsap.to(form, { opacity: 0, y: -20, duration: 0.3 })
           }
         }
       }
@@ -175,6 +205,20 @@ export default {
           },
         )
         .subscribe()
+    },
+    hoverBtn() {
+      gsap.to(this.$refs.addBtn, {
+        scale: 1.05,
+        duration: 0.2,
+        ease: 'power2.out',
+      })
+    },
+    leaveBtn() {
+      gsap.to(this.$refs.addBtn, {
+        scale: 1,
+        duration: 0.2,
+        ease: 'power2.inOut',
+      })
     },
   },
 }
@@ -235,11 +279,12 @@ export default {
 
 button {
   padding: 8px 12px;
-  background-color: var(--color-button-bg);
+  background-color: var(--color-button-bg, #444);
   border: none;
-  color: var(--color-button-text);
+  color: var(--color-button-text, #fff);
   cursor: pointer;
   border-radius: 4px;
+  transition: background-color 0.2s;
 }
 
 button:hover {
