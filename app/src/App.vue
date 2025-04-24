@@ -10,6 +10,7 @@ import { useAuthStore } from './stores/auth'
         <nav>
           <RouterLink to="/">Sign In</RouterLink>
           <RouterLink to="/about">Sign Up</RouterLink>
+          <RouterLink to="/schedules">Schedules</RouterLink>
         </nav>
       </div>
     </header>

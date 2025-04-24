@@ -100,7 +100,6 @@
 <script>
 import supabase from './supabase.js'
 import { gsap } from 'gsap'
-import supabase from 'supabase.js'
 
 export default {
   data() {
