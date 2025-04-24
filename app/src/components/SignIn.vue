@@ -57,7 +57,7 @@
 import { ref } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
-import supabase from '../supabase'
+import supabase from './supabase'
 
 const router = useRouter()
 
