@@ -34,3 +34,8 @@ a,
     padding: 0 2rem;
   }
 }
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@import "tailwindcss";
