@@ -1,8 +1,9 @@
 <template>
-  <div>
+  <div class="container">
     <h1>Schedule</h1>
+
     <!-- Display the current schedules -->
-    <table>
+    <table class="schedule-table">
       <thead>
         <tr>
           <th>Title</th>
@@ -22,32 +23,51 @@
     </table>
 
     <!-- Form to add a new schedule -->
-    <div v-if="isFormVisible">
+    <div v-if="isFormVisible" class="form-wrapper">
       <h2>Add Schedule</h2>
       <form @submit.prevent="submitForm">
-        <label for="title">Title:</label>
-        <input v-model="newSchedule.title" id="title" type="text" required />
+        <div class="form-group">
+          <label for="title">Title:</label>
+          <input v-model="newSchedule.title" id="title" type="text" required />
+        </div>
 
-        <label for="start_time">Start Time:</label>
-        <input v-model="newSchedule.start_time" id="start_time" type="datetime-local" required />
+        <div class="form-group">
+          <label for="start_time">Start Time:</label>
+          <input v-model="newSchedule.start_time" id="start_time" type="datetime-local" required />
+        </div>
 
-        <label for="end_time">End Time:</label>
-        <input v-model="newSchedule.end_time" id="end_time" type="datetime-local" required />
+        <div class="form-group">
+          <label for="end_time">End Time:</label>
+          <input v-model="newSchedule.end_time" id="end_time" type="datetime-local" required />
+        </div>
 
-        <label for="description">Description:</label>
-        <textarea v-model="newSchedule.description" id="description"></textarea>
+        <div class="form-group">
+          <label for="description">Description:</label>
+          <textarea v-model="newSchedule.description" id="description"></textarea>
+        </div>
 
-        <button type="submit">Save Schedule</button>
-        <button @click="cancelForm" type="button">Cancel</button>
+        <div class="form-buttons">
+          <button type="submit">Save Schedule</button>
+          <button type="button" @click="cancelForm">Cancel</button>
+        </div>
       </form>
     </div>
 
-    <button @click="showForm">Add New Schedule</button>
+    <button
+      v-if="!isFormVisible"
+      ref="addBtn"
+      @click="showForm"
+      @mouseenter="hoverBtn"
+      @mouseleave="leaveBtn"
+    >
+      Add New Schedule
+    </button>
   </div>
 </template>
 
 <script>
-import { supabase } from '../supabase.js'
+import supabase from './supabase.js'
+import { gsap } from 'gsap'
 
 export default {
   data() {
@@ -60,27 +80,70 @@ export default {
         end_time: '',
         description: '',
       },
+      subscription: null,
     }
   },
-  mounted() {
-    this.loadSchedules()
+  async mounted() {
+    await this.loadSchedules()
+    this.subscribeToChanges()
+
+    // Animate header
+    const title = this.$el.querySelector('h1')
+    gsap.fromTo(title, { opacity: 0, y: -50 }, { opacity: 1, y: 0, duration: 1 })
+
+    // Animate all table rows on mount
+    this.$nextTick(() => {
+      const rows = this.$el.querySelectorAll('tbody tr')
+      gsap.from(rows, {
+        opacity: 0,
+        y: 20,
+        stagger: 0.1,
+        duration: 0.6,
+        ease: 'power2.out',
+      })
+    })
+  },
+  beforeUnmount() {
+    if (this.subscription) {
+      supabase.removeChannel(this.subscription)
+    }
+  },
+  watch: {
+    schedules() {
+      this.$nextTick(() => {
+        const rows = this.$el.querySelectorAll('tbody tr')
+        const lastRow = rows[rows.length - 1]
+        if (lastRow) {
+          gsap.fromTo(
+            lastRow,
+            { opacity: 0, y: 40, scale: 0.95 },
+            { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: 'back.out(1.7)' },
+          )
+        }
+      })
+    },
   },
   methods: {
     async loadSchedules() {
-      // Fetch all schedules from the Supabase table
       const { data, error } = await supabase.from('schedules').select()
-      if (error) {
-        console.error('Error loading schedules:', error)
-      } else {
+      if (!error) {
         this.schedules = data
+      } else {
+        console.error('Error loading schedules:', error)
       }
     },
     showForm() {
-      // Display the form to add a new schedule
       this.isFormVisible = true
+      this.$nextTick(() => {
+        const form = this.$el.querySelector('.form-wrapper')
+        gsap.fromTo(
+          form,
+          { opacity: 0, y: -30 },
+          { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out' },
+        )
+      })
     },
     cancelForm() {
-      // Hide the form and reset the new schedule data
       this.isFormVisible = false
       this.newSchedule = {
         title: '',
@@ -90,17 +153,141 @@ export default {
       }
     },
     async submitForm() {
-      // Submit the form and insert the new schedule into the table
-      const { data, error } = await supabase.from('schedules').insert([this.newSchedule])
+      if (this.isEditing) {
+        const { error } = await supabase
+          .from('schedules')
+          .update(this.newSchedule)
+          .eq('id', this.newSchedule.id)
 
-      if (error) {
-        console.error('Error saving schedule:', error)
+        if (error) {
+          console.error('Error updating schedule:', error)
+        } else {
+          this.cancelForm()
+        }
       } else {
-        // Add the new schedule to the local list and reset the form
-        this.schedules.push(data[0])
-        this.cancelForm()
+        const { error } = await supabase.from('schedules').insert([this.newSchedule])
+        if (error) {
+          console.error('Error saving schedule:', error)
+        } else {
+          this.cancelForm()
+          const form = this.$el.querySelector('.form-wrapper')
+          if (form) {
+            gsap.to(form, { opacity: 0, y: -20, duration: 0.3 })
+          }
+        }
       }
+    },
+    subscribeToChanges() {
+      this.subscription = supabase
+        .channel('schedules-realtime')
+        .on(
+          'postgres_changes',
+          { event: 'INSERT', schema: 'public', table: 'schedules' },
+          (payload) => {
+            this.schedules.push(payload.new)
+          },
+        )
+        .on(
+          'postgres_changes',
+          { event: 'UPDATE', schema: 'public', table: 'schedules' },
+          (payload) => {
+            const index = this.schedules.findIndex((s) => s.id === payload.new.id)
+            if (index !== -1) {
+              this.schedules[index] = payload.new
+            }
+          },
+        )
+        .on(
+          'postgres_changes',
+          { event: 'DELETE', schema: 'public', table: 'schedules' },
+          (payload) => {
+            this.schedules = this.schedules.filter((s) => s.id !== payload.old.id)
+          },
+        )
+        .subscribe()
+    },
+    hoverBtn() {
+      gsap.to(this.$refs.addBtn, {
+        scale: 1.05,
+        duration: 0.2,
+        ease: 'power2.out',
+      })
+    },
+    leaveBtn() {
+      gsap.to(this.$refs.addBtn, {
+        scale: 1,
+        duration: 0.2,
+        ease: 'power2.inOut',
+      })
     },
   },
 }
 </script>
+
+<style scoped>
+.container {
+  padding: 20px;
+  max-width: 800px;
+  margin: auto;
+  color: var(--color-text);
+}
+
+.schedule-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+.schedule-table th,
+.schedule-table td {
+  border: 1px solid #666;
+  padding: 8px;
+  text-align: left;
+}
+
+.form-wrapper {
+  margin-bottom: 20px;
+  background: #222;
+  padding: 15px;
+  border-radius: 8px;
+}
+
+.form-group {
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  margin-bottom: 4px;
+}
+
+.form-group input,
+.form-group textarea {
+  padding: 6px;
+  background: #333;
+  border: 1px solid #555;
+  color: var(--color-text);
+  border-radius: 4px;
+}
+
+.form-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+button {
+  padding: 8px 12px;
+  background-color: var(--color-button-bg, #444);
+  border: none;
+  color: var(--color-button-text, #fff);
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+button:hover {
+  background-color: #666;
+}
+</style>
