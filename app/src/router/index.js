@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Schedules from '../components/Schedules.vue'
 import HomeView from '../views/SignIn.vue'
+import { useAuthStore } from '../stores/auth'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -14,14 +15,19 @@ const router = createRouter({
       path: '/schedules',
       name: 'schedules',
       component: Schedules,
+      beforeEnter: (to, from, next) => {
+        const auth = useAuthStore()
+        if (auth.isLoggedin) {
+          next()
+        } else {
+          alert('Not Logged In')
+          next('/') // redirect to login page if not logged in
+        }
+      },
     },
     {
       path: '/about',
       name: 'about',
-      //required: auth.isLoggedin,
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
       component: () => import('../views/SignUp.vue'),
     },
   ],
