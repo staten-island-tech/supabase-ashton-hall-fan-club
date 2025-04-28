@@ -1,7 +1,6 @@
 <template>
   <div>
     <h1>Schedule</h1>
-    <!-- Display the current schedules -->
     <table>
       <thead>
         <tr>
@@ -21,7 +20,6 @@
       </tbody>
     </table>
 
-    <!-- Form to add a new schedule -->
     <div v-if="isFormVisible">
       <h2>Add Schedule</h2>
       <form @submit.prevent="submitForm">
@@ -67,7 +65,6 @@ export default {
   },
   methods: {
     async loadSchedules() {
-      // Fetch all schedules from the Supabase table
       const { data, error } = await supabase.from('schedules').select()
       if (error) {
         console.error('Error loading schedules:', error)
@@ -76,11 +73,9 @@ export default {
       }
     },
     showForm() {
-      // Display the form to add a new schedule
       this.isFormVisible = true
     },
     cancelForm() {
-      // Hide the form and reset the new schedule data
       this.isFormVisible = false
       this.newSchedule = {
         title: '',
@@ -90,13 +85,11 @@ export default {
       }
     },
     async submitForm() {
-      // Submit the form and insert the new schedule into the table
       const { data, error } = await supabase.from('schedules').insert([this.newSchedule])
 
       if (error) {
         console.error('Error saving schedule:', error)
       } else {
-        // Add the new schedule to the local list and reset the form
         this.schedules.push(data[0])
         this.cancelForm()
       }
