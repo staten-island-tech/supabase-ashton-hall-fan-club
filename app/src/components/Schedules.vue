@@ -97,59 +97,55 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, onMounted } from 'vue'
 import supabase from './supabase.js'
-import { gsap } from 'gsap'
 
-export default {
-  data() {
-    return {
-      schedules: [],
-      isFormVisible: false,
-      newSchedule: {
-        title: '',
-        start_time: '',
-        end_time: '',
-        description: '',
-      },
-    }
-  },
-  mounted() {
-    this.loadSchedules()
-  },
-  methods: {
-    async loadSchedules() {
-      // Fetch all schedules from the Supabase table
-      const { data, error } = await supabase.from('schedules').select()
-      if (error) {
-        console.error('Error loading schedules:', error)
-      } else {
-        this.schedules = data
-      }
-    },
-    showForm() {
-      // Display the form to add a new schedule
-      this.isFormVisible = true
-    },
-    cancelForm() {
-      this.isFormVisible = false
-      this.newSchedule = {
-        title: '',
-        start_time: '',
-        end_time: '',
-        description: '',
-      }
-    },
-    async submitForm() {
-      const { data, error } = await supabase.from('schedules').insert([this.newSchedule])
+// State
+const schedules = ref([])
+const isFormVisible = ref(false)
+const newSchedule = ref({
+  title: '',
+  start_time: '',
+  end_time: '',
+  description: '',
+})
 
-      if (error) {
-        console.error('Error saving schedule:', error)
-      } else {
-        this.schedules.push(data[0])
-        this.cancelForm()
-      }
-    },
-  },
+// Load schedules
+const loadSchedules = async () => {
+  const { data, error } = await supabase.from('schedules').select()
+  if (error) {
+    console.error('Error loading schedules:', error)
+  } else {
+    schedules.value = data
+  }
 }
+
+// Form handlers
+const showForm = () => {
+  isFormVisible.value = true
+}
+
+const cancelForm = () => {
+  isFormVisible.value = false
+  newSchedule.value = {
+    title: '',
+    start_time: '',
+    end_time: '',
+    description: '',
+  }
+}
+
+const submitForm = async () => {
+  const { data, error } = await supabase.from('schedules').insert([newSchedule.value])
+  if (error) {
+    console.error('Error saving schedule:', error)
+  } else {
+    schedules.value.push(data[0])
+    cancelForm()
+  }
+}
+
+// Init
+onMounted(loadSchedules)
 </script>
