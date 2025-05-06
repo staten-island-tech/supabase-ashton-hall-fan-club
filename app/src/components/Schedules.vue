@@ -99,7 +99,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import supabase from './supabase.js'
+import { supabase } from './supabase'
 
 // State
 const schedules = ref([])
