@@ -9,7 +9,7 @@ import { useAuthStore } from './stores/auth'
       <div class="wrapper">
         <nav>
           <RouterLink to="/">Sign In</RouterLink>
-          <RouterLink to="/about">Sign Up</RouterLink>
+          <RouterLink to="/signUp">Sign Up</RouterLink>
           <RouterLink to="/schedules">Schedules</RouterLink>
         </nav>
       </div>
