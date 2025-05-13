@@ -123,6 +123,8 @@ import { supabase } from './supabase'
 // State
 const schedules = ref([])
 const isFormVisible = ref(false)
+const isSaving = ref(false)
+
 const newSchedule = ref({
   title: '',
   start_time: '',
@@ -130,9 +132,12 @@ const newSchedule = ref({
   description: '',
 })
 
-// Load schedules
+// Load schedules on mount
 const loadSchedules = async () => {
-  const { data, error } = await supabase.from('schedules').select()
+  const { data, error } = await supabase
+    .from('schedules')
+    .select()
+    .order('start_time', { ascending: true })
   if (error) {
     console.error('Error loading schedules:', error)
   } else {
@@ -140,11 +145,12 @@ const loadSchedules = async () => {
   }
 }
 
-// Form handlers
+// Show form
 const showForm = () => {
   isFormVisible.value = true
 }
 
+// Cancel/reset form
 const cancelForm = () => {
   isFormVisible.value = false
   newSchedule.value = {
@@ -155,14 +161,21 @@ const cancelForm = () => {
   }
 }
 
+// Submit form
 const submitForm = async () => {
-  const { data, error } = await supabase.from('schedules').insert([newSchedule.value])
+  isSaving.value = true
+  const { data, error } = await supabase
+    .from('schedules')
+    .insert([newSchedule.value])
+    .select()
+    .single()
   if (error) {
     console.error('Error saving schedule:', error)
   } else {
-    schedules.value.push(data[0])
+    schedules.value.push(data)
     cancelForm()
   }
+  isSaving.value = false
 }
 
 // Init
