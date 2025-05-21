@@ -119,8 +119,8 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { supabase } from './supabase'
+import { useAuthStore } from '@/stores/auth'
 
-// State
 const schedules = ref([])
 const isFormVisible = ref(false)
 const newSchedule = ref({
@@ -130,9 +130,19 @@ const newSchedule = ref({
   description: '',
 })
 
-// Load schedules
+// Load schedules for the current user
 const loadSchedules = async () => {
-  const { data, error } = await supabase.from('schedules').select()
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser()
+  if (userError || !user) {
+    console.error('User not authenticated:', userError)
+    return
+  }
+
+  const { data, error } = await supabase.from('schedules').select().eq('user_id', user.id) // ✅ only fetch schedules for this user
+
   if (error) {
     console.error('Error loading schedules:', error)
   } else {
@@ -140,7 +150,6 @@ const loadSchedules = async () => {
   }
 }
 
-// Form handlers
 const showForm = () => {
   isFormVisible.value = true
 }
@@ -156,7 +165,22 @@ const cancelForm = () => {
 }
 
 const submitForm = async () => {
-  const { data, error } = await supabase.from('schedules').insert([newSchedule.value])
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser()
+  if (userError || !user) {
+    console.error('User not authenticated:', userError)
+    return
+  }
+
+  const scheduleToInsert = {
+    ...newSchedule.value,
+    user_id: user.id, // ✅ link schedule to auth user
+  }
+
+  const { data, error } = await supabase.from('schedules').insert([scheduleToInsert]).select()
+
   if (error) {
     console.error('Error saving schedule:', error)
   } else {
@@ -165,6 +189,7 @@ const submitForm = async () => {
   }
 }
 
-// Init
-onMounted(loadSchedules)
+onMounted(() => {
+  loadSchedules()
+})
 </script>
