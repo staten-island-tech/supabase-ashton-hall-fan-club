@@ -17,7 +17,7 @@
           <tr
             v-for="schedule in schedules"
             :key="schedule.id"
-            class="border-t border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
+            class="group border-t border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
           >
             <td class="px-4 py-2 text-gray-800 dark:text-gray-100">{{ schedule.title }}</td>
             <td class="px-4 py-2 text-gray-800 dark:text-gray-100">
@@ -26,7 +26,19 @@
             <td class="px-4 py-2 text-gray-800 dark:text-gray-100">
               {{ new Date(schedule.end_time).toLocaleString() }}
             </td>
-            <td class="px-4 py-2 text-gray-800 dark:text-gray-100">{{ schedule.description }}</td>
+            <td
+              class="px-4 py-2 text-gray-800 dark:text-gray-100 flex items-center justify-between"
+            >
+              <span>{{ schedule.description }}</span>
+              <span class="hidden group-hover:flex gap-2">
+                <button @click="editSchedule(schedule)" class="text-blue-500 underline text-sm">
+                  Edit
+                </button>
+                <button @click="deleteSchedule(schedule.id)" class="text-red-500 underline text-sm">
+                  Delete
+                </button>
+              </span>
+            </td>
           </tr>
         </tbody>
       </table>
@@ -119,10 +131,11 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { supabase } from './supabase'
-import { useAuthStore } from '@/stores/auth'
 
 const schedules = ref([])
 const isFormVisible = ref(false)
+const isSaving = ref(false)
+
 const newSchedule = ref({
   title: '',
   start_time: '',
@@ -136,12 +149,17 @@ const loadSchedules = async () => {
     data: { user },
     error: userError,
   } = await supabase.auth.getUser()
+
   if (userError || !user) {
     console.error('User not authenticated:', userError)
     return
   }
 
-  const { data, error } = await supabase.from('schedules').select().eq('user_id', user.id) // ✅ only fetch schedules for this user
+  const { data, error } = await supabase
+    .from('schedules')
+    .select()
+    .eq('user_id', user.id)
+    .order('start_time', { ascending: true })
 
   if (error) {
     console.error('Error loading schedules:', error)
@@ -150,10 +168,12 @@ const loadSchedules = async () => {
   }
 }
 
+// Show form
 const showForm = () => {
   isFormVisible.value = true
 }
 
+// Cancel/reset form
 const cancelForm = () => {
   isFormVisible.value = false
   newSchedule.value = {
@@ -164,19 +184,24 @@ const cancelForm = () => {
   }
 }
 
+// Submit form
 const submitForm = async () => {
+  isSaving.value = true
+
   const {
     data: { user },
     error: userError,
   } = await supabase.auth.getUser()
+
   if (userError || !user) {
     console.error('User not authenticated:', userError)
+    isSaving.value = false
     return
   }
 
   const scheduleToInsert = {
     ...newSchedule.value,
-    user_id: user.id, // ✅ link schedule to auth user
+    user_id: user.id,
   }
 
   const { data, error } = await supabase.from('schedules').insert([scheduleToInsert]).select()
@@ -184,9 +209,11 @@ const submitForm = async () => {
   if (error) {
     console.error('Error saving schedule:', error)
   } else {
-    schedules.value.push(data[0])
+    schedules.value.push(...data)
     cancelForm()
   }
+
+  isSaving.value = false
 }
 
 onMounted(() => {
