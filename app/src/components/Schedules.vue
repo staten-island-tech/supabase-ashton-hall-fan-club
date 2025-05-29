@@ -132,7 +132,7 @@
 import { ref, onMounted } from 'vue'
 import { supabase } from './supabase'
 
-// Reactive state
+// State
 const schedules = ref([])
 const isFormVisible = ref(false)
 const isSaving = ref(false)
@@ -144,24 +144,12 @@ const newSchedule = ref({
   description: '',
 })
 
-// Load schedules for the current user
+// Load schedules on mount
 const loadSchedules = async () => {
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser()
-
-  if (userError || !user) {
-    console.error('User not authenticated:', userError)
-    return
-  }
-
   const { data, error } = await supabase
     .from('schedules')
     .select()
-    .eq('user_id', user.id)
     .order('start_time', { ascending: true })
-
   if (error) {
     console.error('Error loading schedules:', error)
   } else {
@@ -169,10 +157,12 @@ const loadSchedules = async () => {
   }
 }
 
+// Show form
 const showForm = () => {
   isFormVisible.value = true
 }
 
+// Cancel/reset form
 const cancelForm = () => {
   isFormVisible.value = false
   newSchedule.value = {
@@ -183,38 +173,23 @@ const cancelForm = () => {
   }
 }
 
+// Submit form
 const submitForm = async () => {
   isSaving.value = true
-
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser()
-
-  if (userError || !user) {
-    console.error('User not authenticated:', userError)
-    isSaving.value = false
-    return
-  }
-
-  const scheduleToInsert = {
-    ...newSchedule.value,
-    user_id: user.id,
-  }
-
-  const { data, error } = await supabase.from('schedules').insert([scheduleToInsert]).select()
-
+  const { data, error } = await supabase
+    .from('schedules')
+    .insert([newSchedule.value])
+    .select()
+    .single()
   if (error) {
     console.error('Error saving schedule:', error)
   } else {
-    schedules.value.push(...data) // Unpack the array properly
+    schedules.value.push(data)
     cancelForm()
   }
-
   isSaving.value = false
 }
 
-onMounted(() => {
-  loadSchedules()
-})
+// Init
+onMounted(loadSchedules)
 </script>
