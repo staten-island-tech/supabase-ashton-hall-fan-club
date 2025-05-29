@@ -103,7 +103,6 @@ function handleLogout() {
 }
 
 function successfulLogin() {
-  router.push('/schedules')
   alert('Logged in')
   console.log('logged in')
 }

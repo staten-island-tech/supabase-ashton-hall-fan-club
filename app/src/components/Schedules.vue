@@ -17,7 +17,7 @@
           <tr
             v-for="schedule in schedules"
             :key="schedule.id"
-            class="group border-t border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
+            class="border-t border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
           >
             <td class="px-4 py-2 text-gray-800 dark:text-gray-100">{{ schedule.title }}</td>
             <td class="px-4 py-2 text-gray-800 dark:text-gray-100">
@@ -26,19 +26,7 @@
             <td class="px-4 py-2 text-gray-800 dark:text-gray-100">
               {{ new Date(schedule.end_time).toLocaleString() }}
             </td>
-            <td
-              class="px-4 py-2 text-gray-800 dark:text-gray-100 flex items-center justify-between"
-            >
-              <span>{{ schedule.description }}</span>
-              <span class="hidden group-hover:flex gap-2">
-                <button @click="editSchedule(schedule)" class="text-blue-500 underline text-sm">
-                  Edit
-                </button>
-                <button @click="deleteSchedule(schedule.id)" class="text-red-500 underline text-sm">
-                  Delete
-                </button>
-              </span>
-            </td>
+            <td class="px-4 py-2 text-gray-800 dark:text-gray-100">{{ schedule.description }}</td>
           </tr>
         </tbody>
       </table>
