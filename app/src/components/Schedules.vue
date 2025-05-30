@@ -131,6 +131,11 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { supabase } from './supabase'
+import { useUserStore } from '@/stores/user'
+
+const userStore = useUserStore()
+await userStore.fetchUser()
+const user = userStore.user
 
 // State
 const schedules = ref([])
@@ -149,6 +154,7 @@ const loadSchedules = async () => {
   const { data, error } = await supabase
     .from('schedules')
     .select()
+    .eq('user_id', user.id)
     .order('start_time', { ascending: true })
   if (error) {
     console.error('Error loading schedules:', error)
@@ -176,17 +182,39 @@ const cancelForm = () => {
 // Submit form
 const submitForm = async () => {
   isSaving.value = true
+
+  // Get the current authenticated user
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser()
+
+  if (userError || !user) {
+    console.error('User not authenticated:', userError)
+    isSaving.value = false
+    return
+  }
+
+  // Prepare schedule with user_id
+  const scheduleToInsert = {
+    ...newSchedule.value,
+    user_id: user.id,
+  }
+
+  // Insert into schedules
   const { data, error } = await supabase
     .from('schedules')
-    .insert([newSchedule.value])
+    .insert([scheduleToInsert])
     .select()
     .single()
+
   if (error) {
     console.error('Error saving schedule:', error)
   } else {
     schedules.value.push(data)
     cancelForm()
   }
+
   isSaving.value = false
 }
 
