@@ -134,8 +134,7 @@ import { supabase } from './supabase'
 import { useUserStore } from '@/stores/user'
 
 const userStore = useUserStore()
-await userStore.fetchUser()
-const user = userStore.user
+const user = ref(null)
 
 // State
 const schedules = ref([])
@@ -149,13 +148,16 @@ const newSchedule = ref({
   description: '',
 })
 
-// Load schedules on mount
+// Load schedules
 const loadSchedules = async () => {
+  if (!user.value) return
+
   const { data, error } = await supabase
     .from('schedules')
     .select()
-    .eq('user_id', user.id)
+    .eq('user_id', user.value.id)
     .order('start_time', { ascending: true })
+
   if (error) {
     console.error('Error loading schedules:', error)
   } else {
@@ -195,13 +197,16 @@ const submitForm = async () => {
     return
   }
 
-  // Prepare schedule with user_id
+  // Prepare data with user_id
   const scheduleToInsert = {
     ...newSchedule.value,
-    user_id: user.id,
+    user_id: user.id, // <- This adds the user_id
   }
 
-  // Insert into schedules
+  // 🔍 Add this line to check what you're inserting
+  console.log('Submitting schedule:', scheduleToInsert)
+
+  // Insert into Supabase
   const { data, error } = await supabase
     .from('schedules')
     .insert([scheduleToInsert])
@@ -219,5 +224,9 @@ const submitForm = async () => {
 }
 
 // Init
-onMounted(loadSchedules)
+onMounted(async () => {
+  await userStore.fetchUser()
+  user.value = userStore.user
+  await loadSchedules()
+})
 </script>

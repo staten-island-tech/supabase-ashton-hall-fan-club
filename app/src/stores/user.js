@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { supabase } from '../supabase'
+import { supabase } from '@/components/supabase'
 
 export const useUserStore = defineStore('user', {
   state: () => ({
@@ -9,6 +9,6 @@ export const useUserStore = defineStore('user', {
     async fetchUser() {
       const { data, error } = await supabase.auth.getUser()
       if (!error) this.user = data.user
-    }
-  }
+    },
+  },
 })
