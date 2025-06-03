@@ -133,6 +133,8 @@ import { ref, onMounted } from 'vue'
 import { supabase } from './supabase'
 
 // State
+const isEditing = ref(false)
+const editingScheduleId = ref(null)
 const schedules = ref([])
 const isFormVisible = ref(false)
 const isSaving = ref(false)
@@ -165,6 +167,8 @@ const showForm = () => {
 // Cancel/reset form
 const cancelForm = () => {
   isFormVisible.value = false
+  isEditing.value = false
+  editingScheduleId.value = null
   newSchedule.value = {
     title: '',
     start_time: '',
@@ -176,18 +180,59 @@ const cancelForm = () => {
 // Submit form
 const submitForm = async () => {
   isSaving.value = true
-  const { data, error } = await supabase
-    .from('schedules')
-    .insert([newSchedule.value])
-    .select()
-    .single()
-  if (error) {
-    console.error('Error saving schedule:', error)
+
+  if (isEditing.value && editingScheduleId.value) {
+    const { data, error } = await supabase
+      .from('schedules')
+      .update(newSchedule.value)
+      .eq('id', editingScheduleId.value)
+      .select()
+      .single()
+
+    if (error) {
+      console.error('Error updating schedule:', error)
+    } else {
+      const index = schedules.value.findIndex((s) => s.id === editingScheduleId.value)
+      if (index !== -1) schedules.value[index] = data
+      cancelForm()
+    }
   } else {
-    schedules.value.push(data)
-    cancelForm()
+    const { data, error } = await supabase
+      .from('schedules')
+      .insert([newSchedule.value])
+      .select()
+      .single()
+
+    if (error) {
+      console.error('Error saving schedule:', error)
+    } else {
+      schedules.value.push(data)
+      cancelForm()
+    }
   }
+
   isSaving.value = false
+}
+
+const deleteSchedule = async (id) => {
+  const { error } = await supabase.from('schedules').delete().eq('id', id)
+  if (error) {
+    console.error('Error deleting schedule:', error)
+  } else {
+    schedules.value = schedules.value.filter((schedule) => schedule.id !== id)
+  }
+}
+
+const editSchedule = (schedule) => {
+  newSchedule.value = {
+    title: schedule.title,
+    start_time: schedule.start_time.slice(0, 16), // for datetime-local input
+    end_time: schedule.end_time.slice(0, 16),
+    description: schedule.description,
+  }
+  editingScheduleId.value = schedule.id
+  isEditing.value = true
+  isFormVisible.value = true
 }
 
 // Init
