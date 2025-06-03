@@ -148,14 +148,14 @@ const newSchedule = ref({
   description: '',
 })
 
-// Load schedules
+// Load schedules using email
 const loadSchedules = async () => {
-  if (!user.value) return
+  if (!user.value || !user.value.email) return
 
   const { data, error } = await supabase
     .from('schedules')
     .select()
-    .eq('user_id', user.value.id)
+    .eq('email', user.value.email)
     .order('start_time', { ascending: true })
 
   if (error) {
@@ -181,11 +181,10 @@ const cancelForm = () => {
   }
 }
 
-// Submit form
+// Submit form using email
 const submitForm = async () => {
   isSaving.value = true
 
-  // Get the current authenticated user
   const {
     data: { user },
     error: userError,
@@ -197,16 +196,13 @@ const submitForm = async () => {
     return
   }
 
-  // Prepare data with user_id
   const scheduleToInsert = {
     ...newSchedule.value,
-    user_id: user.id, // <- This adds the user_id
+    email: user.email, // use email as the foreign key
   }
 
-  // 🔍 Add this line to check what you're inserting
   console.log('Submitting schedule:', scheduleToInsert)
 
-  // Insert into Supabase
   const { data, error } = await supabase
     .from('schedules')
     .insert([scheduleToInsert])
