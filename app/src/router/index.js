@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import Schedules from '../components/Schedules.vue'
 import HomeView from '../views/InView.vue'
 import { useAuthStore } from '../stores/auth'
-
+import Calendar from '../components/Calendar.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -29,6 +29,11 @@ const router = createRouter({
       path: '/signUp',
       name: 'Sign Up',
       component: () => import('../components/SignUp.vue'),
+    },
+    {
+      path: '/calendar',
+      name: 'calendar',
+      component: Calendar,
     },
   ],
 })
