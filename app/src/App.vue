@@ -3,18 +3,42 @@ import { RouterLink, RouterView } from 'vue-router'
 </script>
 
 <template>
-  <div>
-    <header>
-      <div class="wrapper">
-        <nav>
-          <RouterLink to="/">Sign In</RouterLink>
-          <RouterLink to="/signUp">Sign Up</RouterLink>
-          <RouterLink to="/schedules">Schedules</RouterLink>
+  <div class="min-h-screen bg-blue-50 dark:bg-gray-900 text-gray-900 dark:text-white">
+    <header class="bg-blue-600 dark:bg-blue-800 shadow-md">
+      <div
+        class="max-w-7xl mx-auto px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-8"
+      >
+        <h1 class="text-xl font-bold text-white">Schedula</h1>
+        <nav class="space-x-6 text-sm sm:text-base">
+          <RouterLink
+            to="/"
+            class="text-white hover:text-blue-200 dark:hover:text-blue-300 transition-colors"
+            active-class="font-semibold underline"
+            exact
+          >
+            Sign In
+          </RouterLink>
+          <RouterLink
+            to="/signUp"
+            class="text-white hover:text-blue-200 dark:hover:text-blue-300 transition-colors"
+            active-class="font-semibold underline"
+          >
+            Sign Up
+          </RouterLink>
+          <RouterLink
+            to="/schedules"
+            class="text-white hover:text-blue-200 dark:hover:text-blue-300 transition-colors"
+            active-class="font-semibold underline"
+          >
+            Schedules
+          </RouterLink>
         </nav>
       </div>
     </header>
 
-    <RouterView />
+    <main class="max-w-7xl mx-auto px-6 py-8">
+      <RouterView />
+    </main>
   </div>
 </template>
 

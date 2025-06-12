@@ -2,7 +2,6 @@
   <div class="max-w-4xl mx-auto p-6 space-y-6">
     <h1 class="text-3xl font-bold text-gray-800 dark:text-gray-100">Schedule</h1>
 
-    <!-- Display the current schedules -->
     <div class="overflow-x-auto shadow rounded-lg">
       <table class="w-full table-auto border-collapse">
         <thead class="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200">
@@ -44,7 +43,6 @@
       </table>
     </div>
 
-    <!-- Form to add a new schedule -->
     <div
       v-if="isFormVisible"
       class="bg-white dark:bg-gray-900 p-6 rounded-lg shadow border border-gray-200 dark:border-gray-700 space-y-4"
@@ -136,7 +134,6 @@ import { useUserStore } from '@/stores/user'
 const userStore = useUserStore()
 const user = ref(null)
 
-// State
 const schedules = ref([])
 const isFormVisible = ref(false)
 const isSaving = ref(false)
@@ -148,7 +145,6 @@ const newSchedule = ref({
   description: '',
 })
 
-// Load schedules using email
 const loadSchedules = async () => {
   if (!user.value || !user.value.email) return
 
@@ -165,12 +161,10 @@ const loadSchedules = async () => {
   }
 }
 
-// Show form
 const showForm = () => {
   isFormVisible.value = true
 }
 
-// Cancel/reset form
 const cancelForm = () => {
   isFormVisible.value = false
   newSchedule.value = {
@@ -181,7 +175,6 @@ const cancelForm = () => {
   }
 }
 
-// Submit form using email
 const submitForm = async () => {
   isSaving.value = true
 
@@ -198,7 +191,7 @@ const submitForm = async () => {
 
   const scheduleToInsert = {
     ...newSchedule.value,
-    email: user.email, // use email as the foreign key
+    email: user.email,
   }
 
   console.log('Submitting schedule:', scheduleToInsert)
@@ -219,7 +212,6 @@ const submitForm = async () => {
   isSaving.value = false
 }
 
-// Init
 onMounted(async () => {
   await userStore.fetchUser()
   user.value = userStore.user
