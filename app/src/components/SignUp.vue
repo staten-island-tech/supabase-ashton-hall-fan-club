@@ -12,7 +12,7 @@
         <label class="block text-sm font-medium mb-1">Email</label>
         <input
           v-model="email"
-          type="text"
+          type="email"
           required
           class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-black text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
@@ -41,6 +41,7 @@
 <script setup>
 import { ref } from 'vue'
 import { supabase } from './supabase'
+
 const email = ref('')
 const password = ref('')
 
@@ -55,23 +56,15 @@ async function handleSignUp() {
     return
   }
 
-  const userId = data.user?.id
-  const userEmail = email.value
+  const user = data.user
+  if (!user) return
 
-  // Insert into your custom table
   const { error: insertError } = await supabase
-    .from('profiles') // replace with your actual table name
-    .insert([{ email: userEmail, user_id: userId }])
+    .from('profiles')
+    .insert([{ id: user.id, email: email.value }])
 
   if (insertError) {
     console.error('Insert error:', insertError.message)
-  } else {
-    console.log('User email saved to table')
   }
-
-  email.value = ''
-  password.value = ''
 }
 </script>
-
-<style lang="scss" scoped></style>

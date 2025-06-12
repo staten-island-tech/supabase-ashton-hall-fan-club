@@ -55,42 +55,26 @@
 
 <script setup>
 import { ref } from 'vue'
-import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 import { supabase } from './supabase'
 
 const router = useRouter()
-
+const auth = useAuthStore()
 const email = ref('')
 const password = ref('')
-const auth = useAuthStore()
 
 async function handleLogin() {
-  // Check if email exists in profiles table
-  const { data: profile, error: profileError } = await supabase
-    .from('profiles')
-    .select('email, user_id')
-    .eq('email', email.value)
-    .single()
-
-  if (profileError || !profile) {
-    alert('Invalid email or user not found!')
-    return
-  }
-
-  // Now, attempt to sign in
-  const { data, error: authError } = await supabase.auth.signInWithPassword({
+  const { data, error } = await supabase.auth.signInWithPassword({
     email: email.value,
     password: password.value,
   })
 
-  if (authError) {
-    alert(`Login failed: ${authError.message}`)
-    console.error('Auth error details:', authError)
+  if (error) {
+    console.error('Sign-in error:', error.message)
     return
   }
 
-  // If successful, proceed with login
   auth.login()
   successfulLogin()
   email.value = ''
