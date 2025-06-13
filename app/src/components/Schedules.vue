@@ -16,6 +16,7 @@
           <tr
             v-for="schedule in schedules"
             :key="schedule.id"
+            ref="tableRows"
             class="group border-t border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
           >
             <td class="px-4 py-2 text-gray-800 dark:text-gray-100">{{ schedule.title }}</td>
@@ -25,18 +26,27 @@
             <td class="px-4 py-2 text-gray-800 dark:text-gray-100">
               {{ new Date(schedule.end_time).toLocaleString() }}
             </td>
-            <td
-              class="px-4 py-2 text-gray-800 dark:text-gray-100 flex items-center justify-between"
-            >
-              <span>{{ schedule.description }}</span>
-              <span class="hidden group-hover:flex gap-2">
-                <button @click="editSchedule(schedule)" class="text-blue-500 underline text-sm">
-                  Edit
-                </button>
-                <button @click="deleteSchedule(schedule.id)" class="text-red-500 underline text-sm">
-                  Delete
-                </button>
-              </span>
+            <td class="px-4 py-2 text-gray-800 dark:text-gray-100">
+              <div class="flex items-center justify-between w-full">
+                <span class="pr-4">{{ schedule.description }}</span>
+
+                <div
+                  class="flex gap-2 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 delay-100"
+                >
+                  <button
+                    @click="editSchedule(schedule)"
+                    class="px-3 py-1 text-sm rounded bg-blue-600 text-white hover:bg-blue-700 transition transform hover:scale-105"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    @click="deleteSchedule(schedule.id)"
+                    class="px-3 py-1 text-sm rounded bg-red-600 text-white hover:bg-red-700 transition transform hover:scale-105"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
             </td>
           </tr>
         </tbody>
@@ -45,6 +55,7 @@
 
     <div
       v-if="isFormVisible"
+      ref="formRef"
       class="bg-white dark:bg-gray-900 p-6 rounded-lg shadow border border-gray-200 dark:border-gray-700 space-y-4"
     >
       <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-200">Add Schedule</h2>
@@ -102,14 +113,14 @@
         <div class="flex gap-3">
           <button
             type="submit"
-            class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition"
+            class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition transform hover:scale-105"
           >
             Save Schedule
           </button>
           <button
             @click="cancelForm"
             type="button"
-            class="bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-gray-100 px-4 py-2 rounded-md hover:bg-gray-400 dark:hover:bg-gray-600 transition"
+            class="bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-gray-100 px-4 py-2 rounded-md hover:bg-gray-400 dark:hover:bg-gray-600 transition transform hover:scale-105"
           >
             Cancel
           </button>
@@ -119,17 +130,20 @@
 
     <button
       @click="showForm"
-      class="bg-green-600 text-white px-5 py-2 rounded-md hover:bg-green-700 transition"
+      class="bg-green-600 text-white px-5 py-2 rounded-md hover:bg-green-700 transition transform hover:scale-105"
     >
       Add New Schedule
     </button>
   </div>
+  <CalendarEvents />
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, nextTick, watch } from 'vue'
 import { supabase } from './supabase'
 import { useUserStore } from '@/stores/user'
+import gsap from 'gsap'
+import CalendarEvents from './CalendarEvents.vue'
 
 const userStore = useUserStore()
 const user = ref(null)
@@ -137,6 +151,8 @@ const user = ref(null)
 const schedules = ref([])
 const isFormVisible = ref(false)
 const isSaving = ref(false)
+const isEditing = ref(false)
+const editingId = ref(null)
 
 const newSchedule = ref({
   title: '',
@@ -166,12 +182,75 @@ const showForm = () => {
 }
 
 const cancelForm = () => {
-  isFormVisible.value = false
+  if (formRef.value) {
+    gsap.to(formRef.value, {
+      opacity: 0,
+      y: -20,
+      duration: 0.3,
+      ease: 'power2.in',
+      onComplete: () => {
+        isFormVisible.value = false
+        isEditing.value = false
+        editingId.value = null
+        newSchedule.value = {
+          title: '',
+          start_time: '',
+          end_time: '',
+          description: '',
+        }
+      },
+    })
+  }
+}
+
+const editSchedule = (schedule) => {
+  const parseValidDate = (rawDate, label) => {
+    const date = new Date(rawDate)
+    if (isNaN(date.getTime())) {
+      alert(`${label} is invalid. Please use a valid date.`)
+      return ''
+    }
+
+    const year = date.getUTCFullYear()
+    if (year > 9999) {
+      alert(`${label} year is too large. Please enter a year under 9999.`)
+      return ''
+    }
+
+    return date.toISOString().slice(0, 16)
+  }
+
   newSchedule.value = {
-    title: '',
-    start_time: '',
-    end_time: '',
-    description: '',
+    title: schedule.title || '',
+    start_time: parseValidDate(schedule.start_time, 'Start time'),
+    end_time: parseValidDate(schedule.end_time, 'End time'),
+    description: schedule.description || '',
+  }
+
+  editingId.value = schedule.id
+  isEditing.value = true
+  isFormVisible.value = true
+}
+
+const deleteSchedule = async (id) => {
+  const rowIndex = schedules.value.findIndex((s) => s.id === id)
+
+  if (rowIndex !== -1) {
+    const rowEl = tableRows.value[rowIndex]
+    gsap.to(rowEl, {
+      opacity: 0,
+      height: 0,
+      duration: 0.3,
+      ease: 'power2.in',
+      onComplete: async () => {
+        const { error } = await supabase.from('schedules').delete().eq('id', id)
+        if (error) {
+          console.error('Error deleting schedule:', error)
+        } else {
+          schedules.value = schedules.value.filter((s) => s.id !== id)
+        }
+      },
+    })
   }
 }
 
@@ -189,24 +268,60 @@ const submitForm = async () => {
     return
   }
 
-  const scheduleToInsert = {
-    ...newSchedule.value,
-    email: user.email,
-  }
+  if (isEditing.value) {
+    const { data, error } = await supabase
+      .from('schedules')
+      .update({
+        ...newSchedule.value,
+        email: user.email,
+      })
+      .eq('id', editingId.value)
+      .select()
+      .single()
 
-  console.log('Submitting schedule:', scheduleToInsert)
+    if (error) {
+      console.error('Error updating schedule:', error)
+    } else {
+      const index = schedules.value.findIndex((s) => s.id === editingId.value)
+      if (index !== -1) {
+        schedules.value[index] = data
+      }
+      cancelForm()
 
-  const { data, error } = await supabase
-    .from('schedules')
-    .insert([scheduleToInsert])
-    .select()
-    .single()
-
-  if (error) {
-    console.error('Error saving schedule:', error)
+      await nextTick()
+      const rowEl = tableRows.value[schedules.value.findIndex((s) => s.id === data.id)]
+      gsap.fromTo(
+        rowEl,
+        { backgroundColor: '#fef08a' }, // yellow-200
+        { backgroundColor: 'transparent', duration: 1 },
+      )
+    }
   } else {
-    schedules.value.push(data)
-    cancelForm()
+    const scheduleToInsert = {
+      ...newSchedule.value,
+      email: user.email,
+    }
+
+    const { data, error } = await supabase
+      .from('schedules')
+      .insert([scheduleToInsert])
+      .select()
+      .single()
+
+    if (error) {
+      console.error('Error saving schedule:', error)
+    } else {
+      schedules.value.push(data)
+      cancelForm()
+
+      await nextTick()
+      const rowEl = tableRows.value[schedules.value.findIndex((s) => s.id === data.id)]
+      gsap.fromTo(
+        rowEl,
+        { backgroundColor: '#fef08a' }, // yellow-200
+        { backgroundColor: 'transparent', duration: 1 },
+      )
+    }
   }
 
   isSaving.value = false
@@ -216,5 +331,30 @@ onMounted(async () => {
   await userStore.fetchUser()
   user.value = userStore.user
   await loadSchedules()
+})
+
+const formRef = ref(null)
+const tableRows = ref([])
+
+watch(schedules, async () => {
+  await nextTick()
+  gsap.from(tableRows.value, {
+    opacity: 0,
+    y: 20,
+    duration: 0.5,
+    stagger: 0.1,
+    ease: 'power2.out',
+  })
+})
+
+watch(isFormVisible, async (visible) => {
+  if (visible) {
+    await nextTick()
+    gsap.fromTo(
+      formRef.value,
+      { opacity: 0, y: -20 },
+      { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out' },
+    )
+  }
 })
 </script>

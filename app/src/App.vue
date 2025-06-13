@@ -9,28 +9,30 @@ import { RouterLink, RouterView } from 'vue-router'
         class="max-w-7xl mx-auto px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-8"
       >
         <h1 class="text-xl font-bold text-white">Schedula</h1>
-        <nav class="space-x-6 text-sm sm:text-base">
+        <nav class="flex flex-wrap gap-3 justify-center sm:justify-start">
           <RouterLink
             to="/"
-            class="text-white hover:text-blue-200 dark:hover:text-blue-300 transition-colors"
-            active-class="font-semibold underline"
+            class="flex items-center gap-2 text-white bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-2 rounded-full hover:from-blue-600 hover:to-blue-700 transition"
+            active-class="from-blue-700 to-blue-800 font-semibold"
             exact
           >
-            Sign In
+            <span>🔑</span> Sign In
           </RouterLink>
+
           <RouterLink
             to="/signUp"
-            class="text-white hover:text-blue-200 dark:hover:text-blue-300 transition-colors"
-            active-class="font-semibold underline"
+            class="flex items-center gap-2 text-white bg-gradient-to-r from-blue-400 to-blue-500 px-4 py-2 rounded-full hover:from-blue-500 hover:to-blue-600 transition"
+            active-class="from-blue-600 to-blue-700 font-semibold"
           >
-            Sign Up
+            <span>📝</span> Sign Up
           </RouterLink>
+
           <RouterLink
             to="/schedules"
-            class="text-white hover:text-blue-200 dark:hover:text-blue-300 transition-colors"
-            active-class="font-semibold underline"
+            class="flex items-center gap-2 text-white bg-gradient-to-r from-blue-300 to-blue-400 px-4 py-2 rounded-full hover:from-blue-400 hover:to-blue-500 transition"
+            active-class="from-blue-500 to-blue-600 font-semibold"
           >
-            Schedules
+            <span>📅</span> Schedules
           </RouterLink>
         </nav>
       </div>
@@ -53,55 +55,26 @@ header {
   margin: 0 auto 2rem;
 }
 
-nav {
-  width: 100%;
-  font-size: 12px;
-  text-align: center;
-  margin-top: 2rem;
+nav a {
+  all: unset;
+  color: white !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
+  background: linear-gradient(to right, #3b82f6, #2563eb);
+  transition: all 0.3s ease;
+}
+
+nav a:hover {
+  background: linear-gradient(to right, #2563eb, #1d4ed8);
 }
 
 nav a.router-link-exact-active {
-  color: var(--color-text);
-}
-
-nav a.router-link-exact-active:hover {
-  background-color: transparent;
-}
-
-nav a {
-  display: inline-block;
-  padding: 0 1rem;
-  border-left: 1px solid var(--color-border);
-}
-
-nav a:first-of-type {
-  border: 0;
-}
-
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
-
-  nav {
-    text-align: left;
-    margin-left: -1rem;
-    font-size: 1rem;
-
-    padding: 1rem 0;
-    margin-top: 1rem;
-  }
+  background: linear-gradient(to right, #1e40af, #1e3a8a);
+  font-weight: 600;
 }
 </style>

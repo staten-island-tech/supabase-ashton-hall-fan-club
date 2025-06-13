@@ -43,10 +43,7 @@
         Log Out
       </button>
 
-      <p
-        v-if="auth.isLoggedin"
-        class="text-center text-green-600 dark:text-green-400 font-semibold"
-      >
+      <p v-if="auth.isLoggedin" class="text-center font-semibold text-blue-600 dark:text-blue-300">
         Welcome back!
       </p>
     </form>
